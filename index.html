@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Browsoxx, le navigateur Windows dont la mini barre flotte au-dessus de la page, avec Bro, le chat qui t'aide à naviguer. Gratuit.">
+<meta property="og:title" content="Browsoxx, le navigateur avec Bro">
+<meta property="og:description" content="La mini barre flotte au-dessus de la page ; Bro, le chat, cherche et range tes onglets.">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cGF0aCBmaWxsPSIjMUIxQjFGIiBzdHJva2U9IiNBOTlDRkYiIHN0cm9rZS13aWR0aD0iMTQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGQ9Ik02MCA3OCBMNTYgMjIgUTU2IDE2IDYyIDIwIEw5OSA1MCBDMTE4IDQ0IDEzOCA0NCAxNTcgNTAgTDE5NCAyMCBRMjAwIDE2IDIwMCAyMiBMMTk2IDc4IEMyMDcgOTMgMjEyIDExMSAyMDggMTI5IEMyMDMgMTYyIDE3NCAxODIgMTI4IDE4NCBDODIgMTgyIDUzIDE2MiA0OCAxMjkgQzQ0IDExMSA0OSA5MyA2MCA3OCBaIi8+PGNpcmNsZSBmaWxsPSIjRUNFQ0YxIiBjeD0iOTYiIGN5PSIxMTIiIHI9IjI5Ii8+PGNpcmNsZSBmaWxsPSIjRUNFQ0YxIiBjeD0iMTYwIiBjeT0iMTEyIiByPSIyOSIvPjwvc3ZnPg==">
+<title>Browsoxx, le navigateur avec Bro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Maquette du site de Browsoxx (GitHub Pages du dépôt public browsoxx-versions).
+   Mise en page : une colonne de 1080 px ; en tête, une vraie fenêtre de Browsoxx avec Bro assis dessus ;
+   le « fil des versions » est une pelote dont le fil relie les versions publiées sur GitHub.
+   Couleurs : celles de la barre (docs/design/tokens.json), sombre d'abord. */
+:root {
+  --bg: #141418; --panel: #1b1b1f; --surface: #26262c; --fg: #ececf1; --muted: #a0a0ab;
+  --border: #3a3a42; --accent: #a99cff; --accent-on: #1b1b1f; --halo: #2e2750;
+  --update: #fcad70; --success: #81c995; --private: #302a44;
+  --chat: #1b1b1f; --chat-trait: #a99cff; --chat-oeil: #ececf1;
+  --display: "Bricolage Grotesque", "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --body: "Figtree", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #efeff4; --panel: #f7f7f8; --surface: #ffffff; --fg: #1d1d1f; --muted: #6b6b76;
+  --border: #dcdce3; --accent: #5b4bd6; --accent-on: #ffffff; --halo: #ddd6ff;
+  --update: #b4470a; --success: #137333; --private: #ede9ff; color-scheme: light;
+} }
+:root[data-theme="light"] {
+  --bg: #efeff4; --panel: #f7f7f8; --surface: #ffffff; --fg: #1d1d1f; --muted: #6b6b76;
+  --border: #dcdce3; --accent: #5b4bd6; --accent-on: #ffffff; --halo: #ddd6ff;
+  --update: #b4470a; --success: #137333; --private: #ede9ff; color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); }
+.col { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
+.sur { font: 600 12px/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.doux { color: var(--muted); }
+.mono { font-family: var(--mono); font-size: .86em; }
+section { padding-block: 72px; }
+section + section { border-top: 1px solid var(--border); }
+.tete-section { display: grid; gap: 10px; margin-bottom: 32px; max-width: 640px; }
+.tete-section p { margin: 0; color: var(--muted); }
+
+/* En-tête */
+.haut { display: flex; align-items: center; gap: 24px; padding-block: 18px; flex-wrap: wrap; }
+.marque { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); color: var(--fg); text-decoration: none; margin-right: auto; }
+.marque svg { width: 30px; height: 30px; }
+.haut nav { display: flex; gap: 20px; flex-wrap: wrap; }
+.haut nav a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.haut nav a:hover { color: var(--fg); }
+
+/* Boutons */
+.bouton { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 999px; background: var(--accent); color: var(--accent-on);
+  font: 700 17px/1 var(--display); text-decoration: none; border: 0; cursor: pointer; transition: transform .15s ease; }
+.bouton:hover { transform: translateY(-2px); }
+.bouton svg { width: 20px; height: 20px; }
+.bouton[aria-disabled="true"] { background: var(--surface); color: var(--muted); box-shadow: inset 0 0 0 1px var(--border); pointer-events: none; }
+.bouton.petit { padding: 9px 16px; font-size: 14px; }
+
+/* Héros */
+.heros { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: center; padding-block: 40px 88px; }
+.heros h1 { font-size: clamp(40px, 6.2vw, 72px); line-height: .98; font-weight: 800; letter-spacing: -.035em; }
+.heros h1 em { font-style: normal; color: var(--accent); }
+.heros .accroche { font-size: 19px; color: var(--muted); margin: 22px 0 30px; max-width: 34ch; }
+.action { display: grid; gap: 12px; justify-items: start; }
+.action .meta { font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.action .meta span + span::before { content: "·"; margin-right: 14px; color: var(--border); }
+.etat-donnees { font-size: 13px; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }
+.etat-donnees i { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
+.etat-donnees.exemple i { background: var(--update); }
+
+/* Fenêtre de démonstration */
+.scene { position: relative; padding-top: 92px; }
+.fenetre { position: relative; border-radius: 12px; background: var(--surface); box-shadow: 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.35); overflow: hidden; aspect-ratio: 16 / 11; max-width: 100%; }
+.page-demo { position: absolute; inset: 0; padding: 70px 8% 0; display: grid; align-content: start; gap: 12px; background: linear-gradient(180deg, var(--halo), var(--surface) 60%); }
+.page-demo b { display: block; height: 12px; border-radius: 6px; background: var(--border); }
+.page-demo .titre { height: 26px; width: 62%; background: var(--fg); opacity: .8; }
+.page-demo .image { height: 120px; border-radius: 10px; background: var(--accent); opacity: .3; }
+.mini-barre { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: min(88%, 460px); display: flex; align-items: center; gap: 6px; padding: 5px;
+  background: var(--panel); border-radius: 12px; box-shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,.3); font-size: 12px; }
+.mini-barre .onglet { padding: 5px 10px; border-radius: 8px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mini-barre .onglet.actif { background: var(--surface); color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); }
+.mini-barre .adresse { flex: 1; min-width: 0; padding: 5px 10px; border-radius: 8px; background: var(--surface); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-barre svg { width: 20px; height: 20px; flex: none; }
+.legende-barre { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+#bro { position: absolute; right: 6%; top: 0; width: 132px; cursor: pointer; background: none; border: 0; padding: 0; z-index: 2; }
+#bro svg { width: 100%; height: auto; overflow: visible; display: block; }
+#bro .queue { transform-origin: 150px 225px; animation: queue 3.2s ease-in-out infinite; }
+@keyframes queue { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+.bulle { position: absolute; right: calc(6% + 140px); top: 8px; max-width: 250px; padding: 12px 14px; border-radius: 14px 14px 4px 14px;
+  background: var(--panel); box-shadow: 0 0 0 1px var(--border), 0 10px 30px rgba(0,0,0,.25); font-size: 14px; line-height: 1.45; z-index: 2; }
+.bulle.pop { animation: pop .3s ease-out; }
+@keyframes pop { from { transform: scale(.9) translateY(6px); opacity: .4; } to { transform: none; opacity: 1; } }
+.bulle small { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+/* Fonctions */
+.fonctions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px 40px; }
+.fonction { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; align-items: start; }
+.fonction svg { width: 40px; height: 40px; padding: 9px; border-radius: 12px; background: var(--private); color: var(--accent); }
+.fonction h3 { font-size: 19px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; }
+.fonction p { margin: 0; color: var(--muted); font-size: 15px; }
+
+/* Bro en conversation */
+.bro-duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+.bro-duo ul { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.bro-duo li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; }
+.bro-duo li svg { width: 16px; height: 16px; margin-top: 5px; color: var(--accent); }
+.chat { background: var(--panel); border-radius: 18px; padding: 18px; box-shadow: 0 0 0 1px var(--border); display: grid; gap: 12px; }
+.chat .ligne { display: flex; gap: 10px; align-items: flex-end; }
+.chat .ligne.moi { justify-content: flex-end; }
+.chat .msg { max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.45; }
+.chat .moi .msg { background: var(--accent); color: var(--accent-on); border-bottom-right-radius: 4px; }
+.chat .lui .msg { background: var(--surface); border-bottom-left-radius: 4px; }
+.chat .lui svg { width: 30px; height: 30px; flex: none; }
+.chat .note { font-size: 12px; color: var(--muted); text-align: center; }
+
+/* Le fil des versions */
+.versions { position: relative; display: grid; gap: 28px; padding-left: 56px; }
+.versions::before { content: ""; position: absolute; left: 19px; top: 8px; bottom: 44px; border-left: 2.5px dashed var(--accent); opacity: .6; }
+.version { position: relative; display: grid; gap: 10px; }
+.version .noeud { position: absolute; left: -46px; top: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 2.5px solid var(--accent); }
+.version.derniere .noeud { background: var(--accent); box-shadow: 0 0 0 6px var(--halo); }
+.version .ligne-tete { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.version h3 { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+.pastille { font: 600 12px/1 var(--body); padding: 5px 10px; border-radius: 999px; background: var(--accent); color: var(--accent-on); }
+.pastille.neutre { background: var(--surface); color: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
+.version ul { margin: 0; padding: 0 0 0 20px; display: grid; gap: 4px; max-width: 68ch; }
+.version ul li::marker { color: var(--accent); }
+.version .fichier { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; color: var(--muted); }
+.version.derniere { background: var(--panel); border-radius: 16px; padding: 20px 22px; margin-left: -22px; box-shadow: 0 0 0 1px var(--border); }
+.version.derniere .noeud { left: -24px; top: 24px; }
+.pelote { position: relative; display: flex; align-items: center; gap: 14px; margin-left: -56px; color: var(--muted); font-size: 14px; }
+.pelote svg { width: 40px; height: 40px; flex: none; }
+.vide { padding: 22px; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px var(--border); }
+
+/* Installation */
+.etapes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; counter-reset: etape; }
+.etape { display: grid; gap: 10px; align-content: start; }
+.etape::before { counter-increment: etape; content: counter(etape); font: 800 44px/1 var(--display); color: var(--accent); }
+.etape h3 { font-size: 20px; font-weight: 700; }
+.etape p { margin: 0; color: var(--muted); font-size: 15px; }
+.smartscreen { margin-top: 6px; padding: 14px; border-radius: 10px; background: #0b5394; color: #fff; font-size: 13px; line-height: 1.4; display: grid; gap: 8px; }
+.smartscreen b { font-size: 15px; }
+.smartscreen u { text-underline-offset: 2px; }
+.smartscreen .btn { justify-self: end; padding: 4px 12px; border: 1px solid #fff; border-radius: 4px; }
+.prerequis { margin-top: 32px; font-size: 14px; color: var(--muted); }
+
+/* Pacte */
+.pacte { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 40px; max-width: 900px; }
+.promesse { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; }
+.promesse svg { width: 24px; height: 24px; color: var(--accent); margin-top: 2px; }
+.promesse p { margin: 0; }
+.promesse p span { display: block; color: var(--muted); font-size: 15px; }
+
+footer { padding-block: 36px 96px; font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 24px; border-top: 1px solid var(--border); }
+
+/* Commandes de la maquette (absentes du vrai site) */
+.maquette { position: fixed; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: calc(100vw - 24px); padding: 6px; border-radius: 12px;
+  background: var(--panel); box-shadow: 0 0 0 1px var(--border), 0 10px 30px rgba(0,0,0,.3); font-size: 12px; }
+.maquette span { color: var(--muted); padding: 0 6px; }
+.maquette button { font: 500 12px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+.maquette button[aria-pressed="true"] { background: var(--accent); color: var(--accent-on); border-color: var(--accent); }
+
+@media (max-width: 860px) {
+  .heros, .bro-duo { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .fonctions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .etapes { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .fonctions, .pacte { grid-template-columns: minmax(0, 1fr); }
+  .haut nav { display: none; }
+  .bulle { right: 120px; max-width: calc(100% - 130px); font-size: 13px; }
+  #bro { width: 104px; right: 2%; }
+  .versions { padding-left: 40px; }
+  .versions::before { left: 11px; }
+  .version .noeud { left: -38px; }
+  .version.derniere { margin-left: -12px; padding: 16px; }
+  .version.derniere .noeud { left: -14px; top: 20px; }
+  .pelote { margin-left: -40px; }
+  section { padding-block: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="tete" viewBox="0 0 256 256">
+    <path fill="var(--chat)" stroke="var(--chat-trait)" stroke-width="12" stroke-linejoin="round" d="M60 78 L56 22 Q56 16 62 20 L99 50 C118 44 138 44 157 50 L194 20 Q200 16 200 22 L196 78 C207 93 212 111 208 129 C203 162 174 182 128 184 C82 182 53 162 48 129 C44 111 49 93 60 78 Z"/>
+    <circle fill="var(--chat-oeil)" cx="96" cy="112" r="29"/><circle fill="var(--chat)" cx="104" cy="104" r="10"/>
+    <circle fill="var(--chat-oeil)" cx="160" cy="112" r="29"/><circle fill="var(--chat)" cx="168" cy="104" r="10"/>
+  </symbol>
+  <symbol id="patte" viewBox="0 0 24 24"><g fill="currentColor"><ellipse cx="12" cy="16" rx="5.2" ry="4.4"/><ellipse cx="5.2" cy="10" rx="2.2" ry="2.8"/><ellipse cx="9.4" cy="5.6" rx="2.2" ry="2.8"/><ellipse cx="14.6" cy="5.6" rx="2.2" ry="2.8"/><ellipse cx="18.8" cy="10" rx="2.2" ry="2.8"/></g></symbol>
+  <symbol id="fleche-bas" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m-5-5 5 5 5-5M5 20h14"/></symbol>
+</svg>
+
+<div class="col">
+  <header class="haut">
+    <a class="marque" href="#haut" id="haut"><svg aria-hidden="true"><use href="#tete"/></svg>Browsoxx</a>
+    <nav aria-label="Sections">
+      <a href="#decouvrir">Découvrir</a>
+      <a href="#bro-section">Bro</a>
+      <a href="#versions">Versions</a>
+      <a href="#installer">Installer</a>
+    </nav>
+    <a class="bouton petit" data-telecharger href="https://github.com/aurelienarenas/browsoxx-versions/releases/latest">Télécharger</a>
+  </header>
+
+  <div class="heros">
+    <div>
+      <h1>Le navigateur qui flotte, avec <em>un chat</em> dedans.</h1>
+      <p class="accroche">Browsoxx laisse toute la fenêtre à la page : sa mini barre flotte au-dessus. Bro, le chat, cherche pour toi, range tes onglets et remplit les formulaires.</p>
+      <div class="action">
+        <a class="bouton" data-telecharger href="https://github.com/aurelienarenas/browsoxx-versions/releases/latest">
+          <svg aria-hidden="true"><use href="#fleche-bas"/></svg><span id="libelle-bouton">Télécharger Browsoxx</span>
+        </a>
+        <div class="meta"><span>Windows 10 et 11, 64 bits</span><span id="meta-taille">Gratuit</span><span>Sans compte</span></div>
+        <div class="etat-donnees" id="etat-donnees"><i></i><span>Lecture des versions sur GitHub…</span></div>
+      </div>
+    </div>
+
+    <div class="scene" id="decouvrir-scene">
+      <div class="bulle" id="bulle" aria-live="polite">Je m'installe en une minute. Promis, je ne griffe pas.<small>Clique sur moi.</small></div>
+      <button id="bro" type="button" aria-label="Bro, le chat : cliquer pour qu'il parle">
+        <svg viewBox="20 10 220 255" aria-hidden="true">
+          <g class="queue"><path fill="var(--chat)" stroke="var(--chat-trait)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M150 222 C165 229 182 227 183 216 C184 210 180 205 176 209 C173 212 166 208 169 203 C179 190 197 201 195 216 C193 239 169 244 150 234 Z"/></g>
+          <g fill="var(--chat)" stroke="var(--chat-trait)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="102" y="230" width="20" height="28" rx="9"/><rect x="134" y="230" width="20" height="28" rx="9"/>
+            <path d="M114 170 Q128 164 142 170 C145 184 155 188 160 205 C170 227 153 241 128 241 C103 241 86 227 96 205 C101 188 111 184 114 170 Z"/>
+          </g>
+          <path fill="var(--chat)" stroke="var(--chat-trait)" stroke-width="4" stroke-linejoin="round" d="M60 78 L56 22 Q56 16 62 20 L99 50 C118 44 138 44 157 50 L194 20 Q200 16 200 22 L196 78 C207 93 212 111 208 129 C203 162 174 182 128 184 C82 182 53 162 48 129 C44 111 49 93 60 78 Z"/>
+          <path fill="var(--chat-trait)" d="M67 37 L69 68 L89 54 Z M189 37 L187 68 L167 54 Z"/>
+          <circle fill="var(--chat-oeil)" cx="96" cy="112" r="29"/><circle fill="var(--chat-oeil)" cx="160" cy="112" r="29"/>
+          <g class="pupille" data-cx="96" data-cy="112"><circle fill="var(--chat)" cx="96" cy="112" r="11"/><circle fill="var(--chat-oeil)" cx="99" cy="108" r="2.4"/></g>
+          <g class="pupille" data-cx="160" data-cy="112"><circle fill="var(--chat)" cx="160" cy="112" r="11"/><circle fill="var(--chat-oeil)" cx="163" cy="108" r="2.4"/></g>
+          <path fill="var(--chat-trait)" d="M124 146 Q128 144 132 146 L128 151 Z"/>
+          <path fill="none" stroke="var(--chat-oeil)" stroke-width="3" stroke-linecap="round" d="M118 155 C118 163 126 165 128 157 C130 165 138 163 138 155"/>
+          <g fill="none" stroke-linecap="round"><path stroke="var(--chat-trait)" stroke-width="2" d="M66 128 L34 119 M64 141 H32 M69 152 L39 164 M190 128 L222 119 M192 141 H224 M187 152 L217 164"/></g>
+        </svg>
+      </button>
+      <div class="fenetre" aria-label="Aperçu de Browsoxx : une page avec la mini barre qui flotte au-dessus" role="img">
+        <div class="page-demo"><b class="titre"></b><b style="width:90%"></b><b style="width:76%"></b><b class="image"></b><b style="width:84%"></b><b style="width:58%"></b></div>
+        <div class="mini-barre">
+          <svg aria-hidden="true"><use href="#tete"/></svg>
+          <span class="onglet actif">Clafoutis aux cerises</span>
+          <span class="onglet">Météo</span>
+          <span class="adresse">cuisine.exemple.fr/clafoutis</span>
+        </div>
+        <span class="legende-barre">La mini barre : elle se déplace où tu veux.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="decouvrir"><div class="col">
+  <div class="tete-section">
+    <span class="sur">Découvrir</span>
+    <h2>Toute la fenêtre pour la page. Le reste flotte.</h2>
+    <p>Browsoxx est construit sur le moteur Chromium de Microsoft Edge : les sites s'affichent comme dans Chrome ou Edge.</p>
+  </div>
+  <div class="fonctions">
+    <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 5h18v14H3zM8 8h8"/></svg>
+      <div><h3>La page d'abord</h3><p>Pas de bande réservée en haut de l'écran. La mini barre flotte au-dessus de la page et se range où tu veux.</p></div></div>
+    <div class="fonction"><svg aria-hidden="true"><use href="#patte"/></svg>
+      <div><h3>Bro pilote le navigateur</h3><p>Ouvrir, trier ou comparer des onglets, chercher, remplir un formulaire : tu demandes, Bro le fait.</p></div></div>
+    <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10.5 17a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13zM15.5 15.5 20 20"/></svg>
+      <div><h3>Recherche avec sources</h3><p>Pose une question dans la barre d'adresse : la réponse arrive avec les pages qui la justifient.</p></div></div>
+    <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/></svg>
+      <div><h3>Pubs bloquées, extensions acceptées</h3><p>Bloqueur intégré, et les extensions du Chrome Web Store, comme Dashlane pour tes mots de passe.</p></div></div>
+    <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 7h7v4H3zM14 7h7v4h-7zM3 15h7v4H3z"/></svg>
+      <div><h3>Onglets en groupes</h3><p>Groupes repliables, liste des onglets avec recherche, sessions restaurées, navigation privée.</p></div></div>
+    <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>
+      <div><h3>Sobre en mémoire</h3><p>Un onglet que tu ne regardes plus se met en veille après 5 minutes et se réveille quand tu y reviens.</p></div></div>
+  </div>
+</div></section>
+
+<section id="bro-section"><div class="col">
+  <div class="bro-duo">
+    <div>
+      <div class="tete-section" style="margin-bottom:0">
+        <span class="sur">Bro</span>
+        <h2>Un chat qui lit les pages pour toi, quand tu le lui demandes.</h2>
+      </div>
+      <ul>
+        <li><svg aria-hidden="true"><use href="#patte"/></svg><span>Il réfléchit avec ton forfait ChatGPT ou avec Claude Code. Tu choisis au premier lancement.</span></li>
+        <li><svg aria-hidden="true"><use href="#patte"/></svg><span>Il travaille en arrière-plan : tu continues à naviguer pendant qu'il cherche.</span></li>
+        <li><svg aria-hidden="true"><use href="#patte"/></svg><span>Il ne lit une page que si tu le lui demandes, et te dit lesquelles il a lues.</span></li>
+      </ul>
+    </div>
+    <div class="chat" aria-label="Exemple de conversation avec Bro">
+      <div class="ligne moi"><div class="msg">Compare les prix des trois bouilloires de mes onglets.</div></div>
+      <div class="ligne lui"><svg aria-hidden="true"><use href="#tete"/></svg><div class="msg">La moins chère est dans l'onglet 2 : 34,90 €, livraison comprise. Les deux autres dépassent 40 €.</div></div>
+      <div class="ligne moi"><div class="msg">Range mes onglets par sujet.</div></div>
+      <div class="ligne lui"><svg aria-hidden="true"><use href="#tete"/></svg><div class="msg">C'est fait : trois groupes, « Cuisine », « Bouilloires » et « Vacances ».</div></div>
+      <div class="note">Exemple de conversation</div>
+    </div>
+  </div>
+</div></section>
+
+<section id="versions"><div class="col">
+  <div class="tete-section">
+    <span class="sur">Le fil des versions</span>
+    <h2>Ce qui change, version après version.</h2>
+    <p>Cette liste se met à jour toute seule depuis GitHub. Browsoxx vérifie la signature de chaque version avant de te la proposer.</p>
+  </div>
+  <div class="versions" id="liste-versions"></div>
+</div></section>
+
+<section id="installer"><div class="col">
+  <div class="tete-section">
+    <span class="sur">Installer</span>
+    <h2>Trois étapes, environ une minute.</h2>
+  </div>
+  <div class="etapes">
+    <div class="etape"><h3>Télécharge l'installeur</h3><p id="etape-fichier">Un seul fichier, Browsoxx-Setup.exe. Pas besoin d'être administrateur.</p>
+      <a class="bouton petit" data-telecharger href="https://github.com/aurelienarenas/browsoxx-versions/releases/latest" style="justify-self:start">Télécharger</a></div>
+    <div class="etape"><h3>Rassure Windows</h3><p>L'installeur n'est pas encore signé, alors Windows prévient. Clique sur « Informations complémentaires », puis sur « Exécuter quand même ».</p>
+      <div class="smartscreen" aria-hidden="true"><b>Windows a protégé votre ordinateur</b><span>Microsoft Defender SmartScreen a empêché le démarrage d'une application non reconnue.</span><u>Informations complémentaires</u><span class="btn">Exécuter quand même</span></div></div>
+    <div class="etape"><h3>Bro t'accueille</h3><p>Il installe le moteur WebView2 s'il manque, puis te demande avec quelle IA réfléchir. Les mises à jour suivantes, c'est lui qui te les propose.</p></div>
+  </div>
+  <p class="prerequis">Windows 10 (version 1809 ou plus récente) ou Windows 11, en 64 bits. Tes données restent dans ton dossier Windows ; la désinstallation te demande si tu veux les garder.</p>
+</div></section>
+
+<section id="pacte"><div class="col">
+  <div class="tete-section">
+    <span class="sur">Le pacte de Bro</span>
+    <h2>Ce que Browsoxx fait de tes données.</h2>
+  </div>
+  <div class="pacte">
+    <div class="promesse"><svg aria-hidden="true"><use href="#patte"/></svg><p>Ton historique et tes favoris restent sur ton ordinateur.<span>Rien n'est synchronisé ailleurs.</span></p></div>
+    <div class="promesse"><svg aria-hidden="true"><use href="#patte"/></svg><p>Bro ne lit que ce que tu lui demandes.<span>Ta demande et les pages lues partent chez l'IA choisie (ChatGPT ou Claude), et nulle part ailleurs.</span></p></div>
+    <div class="promesse"><svg aria-hidden="true"><use href="#patte"/></svg><p>Aucune télémétrie de Browsoxx.<span>Deux services de Microsoft restent actifs : SmartScreen vérifie les adresses visitées (désactivable), et WebView2 suit les réglages de diagnostic de Windows.</span></p></div>
+    <div class="promesse"><svg aria-hidden="true"><use href="#patte"/></svg><p>Une vérification de version par jour.<span>Browsoxx lit la liste des versions sur GitHub, sans rien envoyer d'autre que la requête elle-même. Rien ne s'installe sans ton accord.</span></p></div>
+  </div>
+</div></section>
+
+<div class="col">
+  <footer>
+    <span>Browsoxx, logiciel libre sous licence MIT, gratuit et sans garantie.</span>
+    <a href="https://github.com/aurelienarenas/browsoxx-versions/releases">Toutes les versions sur GitHub</a>
+  </footer>
+</div>
+
+
+<script>
+// Tout le site tient dans ce fichier ; les versions viennent de l'API publique de GitHub
+// (60 requêtes par heure et par visiteur), gardées 30 minutes dans le navigateur.
+const MAQUETTE = false; // true dans la maquette : commandes d'état
+const DEPOT = "aurelienarenas/browsoxx-versions";
+const API = `https://api.github.com/repos/${DEPOT}/releases?per_page=20`;
+const PAGE_VERSIONS = `https://github.com/${DEPOT}/releases`;
+const CACHE = "bx-versions";
+const CACHE_DUREE = 30 * 60 * 1000;
+const INSTALLEUR = /^Browsoxx-Setup-.+\.exe$/;
+
+// Données d'exemple, reprises du CHANGELOG ; la 0.1.0 n'a jamais eu d'installeur.
+const EXEMPLE = [
+  { version: "0.2.0", date: "2026-10-22", notes: [
+      "Bro peut réfléchir avec Claude Code, en plus du forfait ChatGPT.",
+      "Les fenêtres des extensions (Dashlane…) s'affichent enfin.",
+      "Onglets en groupes, liste des onglets avec recherche.",
+      "Browsoxx se met à jour tout seul : Bro te prévient quand une version sort."],
+    fichier: { nom: "Browsoxx-Setup-0.2.0.exe", url: `${PAGE_VERSIONS}/latest`, taille: 6170195 }, telechargements: null, page: `${PAGE_VERSIONS}/latest` },
+  { version: "0.1.0", date: "2026-10-13", notes: [
+      "Première version de développement : onglets, onglets privés, raccourcis de Chrome.",
+      "Recherche par IA dans la barre d'adresse, avec ses sources.",
+      "Onglets mis en veille pour économiser la mémoire."],
+    fichier: null, telechargements: null, page: null },
+];
+
+const $ = s => document.querySelector(s);
+const echappe = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const mo = o => (o / 1e6).toFixed(1).replace(".", ",") + " Mo";
+const jour = d => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+function lireRelease(r) {
+  const a = (r.assets || []).find(a => INSTALLEUR.test(a.name));
+  return {
+    version: r.tag_name.replace(/^v/, ""),
+    date: r.published_at,
+    notes: (r.body || "").split(/\r?\n/).filter(l => l.startsWith("- ")).map(l => l.slice(2).trim()),
+    fichier: a ? { nom: a.name, url: a.browser_download_url, taille: a.size } : null,
+    telechargements: a ? a.download_count : null,
+    page: r.html_url,
+  };
+}
+
+async function versionsGitHub() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE) || "null");
+    if (c && Date.now() - c.t < CACHE_DUREE) return { liste: c.liste, quand: c.t };
+  } catch (e) {}
+  const stop = new AbortController();
+  const minuteur = setTimeout(() => stop.abort(), 6000);
+  try {
+    const rep = await fetch(API, { headers: { Accept: "application/vnd.github+json" }, signal: stop.signal });
+    if (!rep.ok) throw new Error(`GitHub a répondu ${rep.status}`);
+    const liste = (await rep.json()).filter(r => !r.draft && !r.prerelease).map(lireRelease);
+    try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), liste })); } catch (e) {}
+    return { liste, quand: Date.now() };
+  } finally { clearTimeout(minuteur); }
+}
+
+function afficher(liste, source) {
+  const etat = $("#etat-donnees");
+  etat.classList.toggle("exemple", source.exemple);
+  etat.querySelector("span").textContent = source.texte;
+
+  const derniere = liste.find(v => v.fichier);
+  const liens = document.querySelectorAll("[data-telecharger]");
+  liens.forEach(a => {
+    a.href = derniere ? derniere.fichier.url : PAGE_VERSIONS;
+    if (derniere) a.removeAttribute("aria-disabled"); else a.setAttribute("aria-disabled", "true");
+  });
+  $("#libelle-bouton").textContent = derniere ? `Télécharger Browsoxx ${derniere.version}` : "Bientôt disponible";
+  $("#meta-taille").textContent = derniere ? `${mo(derniere.fichier.taille)}, gratuit` : "Gratuit";
+  $("#etape-fichier").textContent = derniere
+    ? `Un seul fichier, ${derniere.fichier.nom} (${mo(derniere.fichier.taille)}). Pas besoin d'être administrateur.`
+    : "Un seul fichier, Browsoxx-Setup.exe. Pas besoin d'être administrateur.";
+
+  const zone = $("#liste-versions");
+  if (!liste.length) {
+    zone.innerHTML = `<div class="vide"><b>La première version arrive.</b><br><span class="doux">Bro finit sa toilette. Dès qu'une version est publiée, elle s'affiche ici avec ses nouveautés.</span></div>`;
+    return;
+  }
+  zone.innerHTML = liste.slice(0, 6).map((v, i) => {
+    const tete = i === 0 ? `<span class="pastille">Dernière version</span>` : "";
+    const fichier = v.fichier
+      ? `<div class="fichier"><a href="${echappe(v.fichier.url)}">${echappe(v.fichier.nom)}</a><span>${mo(v.fichier.taille)}</span>`
+        + (v.telechargements != null ? `<span>téléchargée ${v.telechargements.toLocaleString("fr-FR")} fois</span>` : "")
+        + `<span class="mono">signée Ed25519 · SHA-256</span></div>`
+      : `<div class="fichier"><span class="pastille neutre">Pas d'installeur</span><span>version de développement</span></div>`;
+    return `<article class="version${i === 0 ? " derniere" : ""}"><span class="noeud" aria-hidden="true"></span>
+      <div class="ligne-tete"><h3>${echappe(v.version)}</h3><time class="doux" datetime="${echappe(v.date)}">${jour(v.date)}</time>${tete}</div>
+      <ul>${v.notes.map(n => `<li>${echappe(n)}</li>`).join("")}</ul>${fichier}</article>`;
+  }).join("") + `<div class="pelote"><svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--accent)"/><path d="M4 9 Q13 15 22 9 M3 15 Q13 21 23 15 M9 2 Q15 13 9 24" fill="none" stroke="var(--bg)" stroke-width="1.4" opacity=".6"/></svg>
+    <span>Le début de la pelote. <a href="${PAGE_VERSIONS}">Toutes les versions sur GitHub</a></span></div>`;
+}
+
+function marquer(etat) {
+  document.querySelectorAll("#maquette [data-etat]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.etat === etat)));
+}
+
+async function charger() {
+  marquer("direct");
+  try {
+    const { liste, quand } = await versionsGitHub();
+    const heure = new Date(quand).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    afficher(liste, { exemple: false, texte: `Versions lues sur GitHub à ${heure}` });
+  } catch (e) {
+    afficher(EXEMPLE, { exemple: true, texte: "GitHub injoignable : versions d'exemple affichées" });
+  }
+}
+
+if (MAQUETTE) {
+  $("#maquette").addEventListener("click", e => {
+    const b = e.target.closest("[data-etat]");
+    if (!b) return;
+    if (b.dataset.etat === "direct") return charger();
+    marquer(b.dataset.etat);
+    if (b.dataset.etat === "exemple") afficher(EXEMPLE, { exemple: true, texte: "Exemple : versions reprises du CHANGELOG" });
+    else afficher([], { exemple: true, texte: "Exemple : aucune version publiée" });
+  });
+} else {
+  $("#maquette")?.remove();
+}
+charger();
+
+// Bro suit la souris des yeux et parle quand on clique dessus.
+const PHRASES = [
+  ["Miaou. Enfin, bonjour.", "Je suis Bro."],
+  ["Je range tes onglets mieux que tu ne ranges ta chambre.", "Sans vouloir te vexer."],
+  ["Je ne lis une page que si tu me le demandes.", "La curiosité, c'est pour les autres chats."],
+  ["Une nouvelle version ? Je te préviens.", "Et je n'installe rien sans toi."],
+  ["La pelote en bas, c'est le fil des versions.", "Ne tire pas trop fort."],
+  ["Je réfléchis avec ton forfait ChatGPT, ou avec Claude Code.", "Tu choisis."],
+];
+let phrase = 0;
+$("#bro").addEventListener("click", () => {
+  const [texte, petit] = PHRASES[phrase++ % PHRASES.length];
+  const bulle = $("#bulle");
+  bulle.innerHTML = `${echappe(texte)}<small>${echappe(petit)}</small>`;
+  bulle.classList.remove("pop"); void bulle.offsetWidth; bulle.classList.add("pop");
+});
+const pupilles = [...document.querySelectorAll("#bro .pupille")];
+const svgBro = $("#bro svg");
+addEventListener("pointermove", e => {
+  const r = svgBro.getBoundingClientRect();
+  const echelle = r.width / 220;
+  pupilles.forEach(p => {
+    const cx = r.left + (+p.dataset.cx - 20) * echelle, cy = r.top + (+p.dataset.cy - 10) * echelle;
+    const dx = e.clientX - cx, dy = e.clientY - cy, d = Math.hypot(dx, dy) || 1, k = Math.min(12, d / 25);
+    p.setAttribute("transform", `translate(${(dx / d * k).toFixed(1)} ${(dy / d * k).toFixed(1)})`);
+  });
+}, { passive: true });
+</script>
+</body>
+</html>

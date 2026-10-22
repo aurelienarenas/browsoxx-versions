@@ -2,6 +2,8 @@
 
 Le navigateur qui flotte au-dessus de tes pages, avec **Bro**, le chat qui t'aide à naviguer.
 
+Site : https://aurelienarenas.github.io/browsoxx-versions/
+
 ## Installer
 
 1. Ouvre la [dernière version](https://github.com/aurelienarenas/browsoxx-versions/releases/latest).
