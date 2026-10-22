@@ -455,7 +455,7 @@ function afficher(liste, source) {
     const tete = i === 0 ? `<span class="pastille">Dernière version</span>` : "";
     const fichier = v.fichier
       ? `<div class="fichier"><a href="${echappe(v.fichier.url)}">${echappe(v.fichier.nom)}</a><span>${mo(v.fichier.taille)}</span>`
-        + (v.telechargements != null ? `<span>téléchargée ${v.telechargements.toLocaleString("fr-FR")} fois</span>` : "")
+        + (v.telechargements > 0 ? `<span>téléchargée ${v.telechargements.toLocaleString("fr-FR")} fois</span>` : "")
         + `<span class="mono">signée Ed25519 · SHA-256</span></div>`
       : `<div class="fichier"><span class="pastille neutre">Pas d'installeur</span><span>version de développement</span></div>`;
     return `<article class="version${i === 0 ? " derniere" : ""}"><span class="noeud" aria-hidden="true"></span>
