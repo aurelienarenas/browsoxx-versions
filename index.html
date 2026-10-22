@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; connect-src https://api.github.com; base-uri 'none'; form-action 'none'">
 <meta name="description" content="Browsoxx, le navigateur Windows dont la mini barre flotte au-dessus de la page, avec Bro, le chat qui t'aide à naviguer. Gratuit.">
 <meta property="og:title" content="Browsoxx, le navigateur avec Bro">
 <meta property="og:description" content="La mini barre flotte au-dessus de la page ; Bro, le chat, cherche et range tes onglets.">
@@ -113,6 +113,13 @@ section + section { border-top: 1px solid var(--border); }
 .fonction h3 { font-size: 19px; font-weight: 700; line-height: 1.25; margin-bottom: 6px; }
 .fonction p { margin: 0; color: var(--muted); font-size: 15px; }
 
+/* Captures réelles (profil d'essai vide) */
+.captures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 56px; }
+.captures figure { margin: 0; display: grid; gap: 10px; align-content: start; }
+.captures img { width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 0 1px var(--border), 0 18px 40px rgba(0,0,0,.25); background: var(--surface); }
+.captures figcaption { font-size: 14px; color: var(--muted); }
+.captures figcaption b { color: var(--fg); font-weight: 600; }
+
 /* Bro en conversation */
 .bro-duo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
 .bro-duo ul { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
@@ -178,7 +185,7 @@ footer { padding-block: 36px 96px; font-size: 14px; color: var(--muted); display
 @media (max-width: 860px) {
   .heros, .bro-duo { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .fonctions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .etapes { grid-template-columns: minmax(0, 1fr); }
+  .etapes, .captures { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
   .fonctions, .pacte { grid-template-columns: minmax(0, 1fr); }
@@ -286,6 +293,12 @@ footer { padding-block: 36px 96px; font-size: 14px; color: var(--muted); display
       <div><h3>Onglets en groupes</h3><p>Groupes repliables, liste des onglets avec recherche, sessions restaurées, navigation privée.</p></div></div>
     <div class="fonction"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg>
       <div><h3>Sobre en mémoire</h3><p>Un onglet que tu ne regardes plus se met en veille après 5 minutes et se réveille quand tu y reviens.</p></div></div>
+  </div>
+  <div class="captures">
+    <figure><img src="images/barre-repliee.png" width="1258" height="580" loading="lazy" alt="Browsoxx sur un nouvel onglet, thème clair : la mini barre repliée en haut, Bro accroché à côté.">
+      <figcaption><b>Repliée.</b> La mini barre ne garde que l'adresse et les commandes ; Bro se tient à côté.</figcaption></figure>
+    <figure><img src="images/barre-depliee.png" width="1258" height="580" loading="lazy" alt="Browsoxx sur un nouvel onglet, thème sombre : la barre dépliée avec les onglets, l'adresse et les commandes.">
+      <figcaption><b>Dépliée.</b> Onglets, adresse, extensions, téléchargements et bloqueur de pubs, en clair ou en sombre.</figcaption></figure>
   </div>
 </div></section>
 
